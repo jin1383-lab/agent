@@ -5,7 +5,7 @@ import isodate
 import pandas as pd
 import json
 
-# Gemini API 연동을 위한 최신 정식 라이브러리인 google-genai를 사용합니다.
+# 최신 정식 라이브러리 로드
 try:
     from google import genai
     from google.genai import types
@@ -14,7 +14,7 @@ except ImportError:
 
 # --- 페이지 설정 ---
 st.set_page_config(
-    page_title="YouTube Gemini Agent Chatbot V1.0",
+    page_title="YouTube Gemini Agent Chatbot V1.1",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -134,7 +134,7 @@ if user_input := st.chat_input("예: 요즘 난리난 무선 게이밍 마우스
         with st.chat_message("assistant"):
             with st.spinner("Gemini가 질문에서 검색 키워드를 가공하는 중..."):
                 try:
-                    # 최신 google-genai SDK 방식으로 클라이언트 선언
+                    # 최신 클라이언트 선언
                     client = genai.Client(api_key=gemini_key)
                     
                     system_instruction = (
@@ -143,9 +143,9 @@ if user_input := st.chat_input("예: 요즘 난리난 무선 게이밍 마우스
                         "JSON 양식: {\"extracted_keyword\": \"가공된 키워드\"}"
                     )
                     
-                    # Gemini 1.5 Flash 모델 호출 및 정밀 JSON 구조 고정
+                    # SDK 표준에 맞춰 모델 스트링 명시 ('gemini-2.5-flash')
                     response = client.models.generate_content(
-                        model='gemini-1.5-flash',
+                        model='gemini-2.5-flash',
                         contents=user_input,
                         config=types.GenerateContentConfig(
                             system_instruction=system_instruction,
@@ -160,7 +160,7 @@ if user_input := st.chat_input("예: 요즘 난리난 무선 게이밍 마우스
                     st.write(f"✨ **Gemini 판단 키워드:** `{search_word}` 데이터를 기반으로 분석을 전개합니다.")
                     
                 except Exception as e:
-                    st.error(f"Gemini 키워드 추출 실패: {e}")
+                    st.error(f"⚠️ 키워드 추출 실패 (기본 입력어로 대체): {e}")
                     search_word = user_input
 
             # 유튜브 데이터 수집 진행
@@ -179,11 +179,12 @@ if user_input := st.chat_input("예: 요즘 난리난 무선 게이밍 마우스
                     report_prompt = (
                         f"당신은 프로페셔널한 유튜브 데이터 분석 에이전트입니다. 아래 제공된 최신 수집 통계를 바탕으로 사용자의 원래 질문인 '{user_input}'에 정성껏 답하는 종합 분석 브리핑 리포트를 가독성 있게 작성해 주세요.\n\n"
                         f"[유튜브 실시간 수집 지표]\n{data_summary}\n"
-                        "구독자 대비 조회수가 폭발한 '성과지수'가 높은 영상들의 성공 요인을 간단히 짚어보고, 현재 소비자들이 이 키워드에서 어떤 포인트에 열광하는지 트렌드를 깔끔하게 마크다운 형태로 리포팅해 주세요. 3줄 핵심 요약 요약도 포함해 주세요."
+                        "구독자 대비 조회수가 폭발한 '성과지수'가 높은 영상들의 성공 요인을 간단히 짚어보고, 현재 소비자들이 이 키워드에서 어떤 포인트에 열광하는지 트렌드를 깔끔하게 마크다운 형태로 리포팅해 주세요. 3줄 핵심 요약도 포함해 주세요."
                     )
                     
+                    # 보고서 작성 모델도 동일하게 올바른 문자열로 변경
                     final_report = client.models.generate_content(
-                        model='gemini-1.5-flash',
+                        model='gemini-2.5-flash',
                         contents=report_prompt
                     )
                     
