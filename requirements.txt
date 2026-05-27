@@ -1,1 +1,4 @@
-pip install google-genai
+google-genai
+google-api-python-client
+isodate
+pandas
